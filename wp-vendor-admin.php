@@ -42,15 +42,29 @@ function wp_vendor_menus() {
    
 }
 function wp_vendor_admin_setting(){
+    global $wpdb;
     
     $user_ID = get_current_user_id();
-    
+
+   
     if(isset($_POST['update'])){
+        $delivery = get_user_meta( $user_ID, '_delivery', true );
 
         update_user_meta( $user_ID, '_delivery', $_POST['_delivery'] );
         update_user_meta( $user_ID, '_delivery_radius', $_POST['_delivery_radius'] );
         update_user_meta( $user_ID, '_delivery_weight', $_POST['_delivery_weight'] );
         update_user_meta( $user_ID, '_delivery_cost', $_POST['_delivery_cost'] );
+        if($delivery !== $_POST['_delivery']) {
+            $sql = "SELECT ID FROM $wpdb->posts WHERE `post_author` = '$user_ID' AND `post_type` LIKE 'job_listing' AND `post_status` = 'publish'";
+            $jobs = $wpdb->get_results($sql);
+            //tj($jobs);
+            foreach($jobs as $job){
+               update_post_meta($job->ID, '_delivery', $_POST['_delivery'] );
+            }
+        }
+        
+
+        
 
     }
     $delivery = get_user_meta( $user_ID, '_delivery', true );
@@ -61,6 +75,12 @@ function wp_vendor_admin_setting(){
     if($delivery==""){
         $delivery = array();
     }
+    
+
+   // echo $result; // display data
+
+    
+    
     ?>
     <style type="text/css">
         .btn-add-more{
@@ -104,10 +124,10 @@ function wp_vendor_admin_setting(){
             </th>
             <td>
                 <label class="jmfe-checklist-label">
-                    <input type="checkbox" style="margin-left: 5px; margin-right: 5px; width: auto;" class="" name="_delivery[]" id="_delivery-Drop" value="Drop" <?php if (in_array("Drop", $delivery)){ ?> checked="'checked'" <?php } ?>>Drop
+                    <input type="checkbox" style="margin-left: 5px; margin-right: 5px; width: auto;" name="_delivery[]" value="Drop" <?php if (in_array("Drop", $delivery)){ ?> checked="'checked'" <?php } ?>>Drop
                 </label>
                 <label class="jmfe-checklist-label">
-                    <input type="checkbox" style="margin-left: 5px; margin-right: 5px; width: auto;" class="" name="_delivery[]" id="_delivery-Pickup" value="Pickup" <?php if (in_array("Pickup", $delivery)){ ?> checked="'checked'" <?php } ?>>Pickup
+                    <input type="checkbox" style="margin-left: 5px; margin-right: 5px; width: auto;" name="_delivery[]" value="Pickup" <?php if (in_array("Pickup", $delivery)){ ?> checked="'checked'" <?php } ?>>Pickup
                 </label>
                 
                 <p class="description">
@@ -173,6 +193,30 @@ function wp_vendor_admin_setting(){
     </table>
     </form>
     <?php
+}
+
+add_action('admin_footer', 'disabled_shipppin_change');
+
+function disabled_shipppin_change() {
+    //farmer-superhero
+    // if( is_user_logged_in() ) {
+    //     $user = wp_get_current_user();
+    //     $roles = ( array ) $user->roles;
+    //     if($roles[0] == "farmer-superhero"){
+             ?>
+            <script type="text/javascript">
+                jQuery(function($){
+                    $('#_delivery-Drop').prop('disabled', true);
+                    $('#_delivery-Pickup').prop('disabled', true);
+                });
+            </script>
+
+               
+            <?php
+
+        //}
+    //}
+ 
 }
 
 function tj($ar,$r = false){
