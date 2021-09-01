@@ -29,3 +29,16 @@ if ( ! defined( 'WPINC' ) ) {
  * Rename this for your plugin and update it as you release new versions.
  */
 define( 'WP_VENDOR_ADMIN', '1.0.0' );
+
+
+add_action( 'admin_menu', 'wp_vendor_menus' );
+
+function wp_vendor_menus() {
+   
+    add_menu_page( 'Wp Vendor Admin', 'Wp Vendor Admin', 1, 'wp-vendor-admin', 'wp_vendor_admin_setting', '', '' );
+}
+function wp_vendor_admin_setting(){
+    ?>
+    hi tj
+    <?php
+}
